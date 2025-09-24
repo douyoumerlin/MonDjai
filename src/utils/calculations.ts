@@ -47,7 +47,7 @@ export const calculateCategoryStats = (expenses: Expense[], categories: CustomCa
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'XOF'
   }).format(amount);
 };
 
