@@ -115,7 +115,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
   const storageStats = LocalDatabase.getStorageStats();
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200">
       <div className="flex items-center gap-2 mb-6">
         <Database className="text-indigo-600" size={24} />
         <h3 className="text-lg font-semibold text-gray-800">Gestion de la Base de Données</h3>
@@ -123,7 +123,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
 
       {/* Message de statut */}
       {message && (
-        <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${
+        <div className={`mb-4 p-3 rounded-xl flex items-center gap-2 ${
           message.type === 'success' 
             ? 'bg-green-50 text-green-700 border border-green-200' 
             : 'bg-red-50 text-red-700 border border-red-200'
@@ -134,7 +134,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
       )}
 
       {/* Statistiques de stockage */}
-      <div className="bg-gray-50 rounded-lg p-4 mb-6">
+      <div className="bg-gray-50 rounded-xl p-4 mb-6">
         <div className="flex items-center gap-2 mb-2">
           <HardDrive className="text-gray-600" size={18} />
           <span className="font-medium text-gray-800">Utilisation du Stockage</span>
@@ -160,11 +160,11 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
       </div>
 
       {/* Actions principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <button
           onClick={handleCreateBackup}
           disabled={isLoading}
-          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-4 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+          className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-4 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
         >
           <Save size={18} />
           Créer une Sauvegarde
@@ -172,13 +172,13 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
 
         <button
           onClick={handleExportData}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
         >
           <Download size={18} />
           Exporter les Données
         </button>
 
-        <label className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer">
+        <label className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer font-medium">
           <Upload size={18} />
           Importer les Données
           <input
@@ -191,7 +191,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
 
         <button
           onClick={handleClearAllData}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
         >
           <Trash2 size={18} />
           Effacer Tout
@@ -208,7 +208,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
         {backups.length > 0 ? (
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {backups.map(({ key, backup }) => (
-              <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
                 <div>
                   <div className="font-medium text-gray-800">
                     {formatDate(backup.timestamp)}
@@ -224,14 +224,14 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
                   <button
                     onClick={() => handleRestoreBackup(backup)}
                     disabled={isLoading}
-                    className="text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition-colors duration-200"
+                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 disabled:text-gray-400 transition-colors duration-200 rounded-lg"
                     title="Restaurer cette sauvegarde"
                   >
                     <RotateCcw size={16} />
                   </button>
                   <button
                     onClick={() => handleDeleteBackup(key)}
-                    className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 transition-colors duration-200 rounded-lg"
                     title="Supprimer cette sauvegarde"
                   >
                     <Trash2 size={16} />
@@ -241,7 +241,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
             ))}
           </div>
         ) : (
-          <div className="text-center py-6">
+          <div className="text-center py-8">
             <div className="text-gray-400 mb-2">💾</div>
             <p className="text-gray-500">Aucune sauvegarde disponible</p>
             <p className="text-sm text-gray-400">Créez votre première sauvegarde pour sécuriser vos données</p>
@@ -250,7 +250,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ onDataChange }
       </div>
 
       {/* Informations */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
         <h4 className="font-semibold text-blue-800 mb-2">💡 Conseils</h4>
         <div className="text-sm text-blue-700 space-y-1">
           <p>• Les sauvegardes sont créées automatiquement lors des modifications importantes</p>

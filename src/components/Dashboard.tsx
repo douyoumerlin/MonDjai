@@ -61,23 +61,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <div
               key={index}
-              className={`${stat.bg} ${stat.border} border rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
+              className={`${stat.bg} ${stat.border} border rounded-2xl p-4 sm:p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
-                  <p className={`text-xl font-bold ${stat.color}`}>
+                  <p className={`text-lg sm:text-xl font-bold ${stat.color}`}>
                     {formatCurrency(stat.amount)}
                   </p>
                 </div>
-                <div className={`${stat.color} p-2 rounded-lg ${stat.bg}`}>
-                  <Icon size={20} />
+                <div className={`${stat.color} p-3 rounded-xl ${stat.bg} shadow-sm`}>
+                  <Icon size={24} />
                 </div>
               </div>
             </div>
@@ -86,24 +86,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
       </div>
 
       {/* Projection */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Projection Mensuelle</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-gray-50 rounded-xl">
             <div className="text-sm text-gray-600 mb-1">Solde Projeté</div>
-            <div className={`text-2xl font-bold ${projectedBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${projectedBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(projectedBalance)}
             </div>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
+          <div className="text-center p-4 bg-gray-50 rounded-xl">
             <div className="text-sm text-gray-600 mb-1">Dépenses Restantes</div>
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-xl sm:text-2xl font-bold text-orange-600">
               {formatCurrency(unpaidExpenses)}
             </div>
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
+          <div className="text-center p-4 bg-gray-50 rounded-xl">
             <div className="text-sm text-gray-600 mb-1">Taux d'Épargne</div>
-            <div className={`text-2xl font-bold ${
+            <div className={`text-xl sm:text-2xl font-bold ${
               totalIncome > 0 && (remainingBudget / totalIncome) >= 0.2 ? 'text-green-600' : 
               totalIncome > 0 && (remainingBudget / totalIncome) >= 0.1 ? 'text-yellow-600' : 'text-red-600'
             }`}>

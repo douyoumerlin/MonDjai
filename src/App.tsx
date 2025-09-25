@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Plus, BarChart3, FileText, Settings, Database, CreditCard, Calendar } from 'lucide-react';
+import { Wallet, Plus, BarChart3, Database, Calendar } from 'lucide-react';
 import { Income, Expense, Loan, FutureExpense, CustomCategory } from './types';
 import { Dashboard } from './components/Dashboard';
 import { IncomeForm } from './components/IncomeForm';
 import { ExpenseList } from './components/ExpenseList';
-import { LoanManager } from './components/LoanManager';
-import { FutureExpenses } from './components/FutureExpenses';
+import { PlanningManager } from './components/PlanningManager';
 import { ExpenseChart } from './components/ExpenseChart';
-import { MonthlyReport } from './components/MonthlyReport';
-import { CategoryManager } from './components/CategoryManager';
 import { DatabaseManager } from './components/DatabaseManager';
 import { getDefaultCategories, getDefaultExpenses } from './utils/calculations';
 import { LocalDatabase } from './utils/storage';
@@ -27,7 +24,7 @@ function App() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [categories, setCategories] = useState<CustomCategory[]>(getDefaultCategories());
-  const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'expenses' | 'loans' | 'future' | 'chart' | 'report' | 'categories' | 'database'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'expenses' | 'planning' | 'chart' | 'database'>('overview');
 
   // Charger les données depuis le localStorage
   const loadData = () => {
@@ -194,48 +191,47 @@ function App() {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Tableau de Bord', icon: Wallet },
+    { id: 'overview', label: 'Accueil', icon: Wallet },
     { id: 'income', label: 'Revenus', icon: Plus },
-    { id: 'expenses', label: 'Dépenses', icon: FileText },
-    { id: 'loans', label: 'Prêts', icon: CreditCard },
-    { id: 'future', label: 'À Prévoir', icon: Calendar },
-    { id: 'chart', label: 'Graphique', icon: BarChart3 },
-    { id: 'report', label: 'Rapport', icon: FileText },
-    { id: 'categories', label: 'Catégories', icon: Settings },
+    { id: 'expenses', label: 'Dépenses', icon: BarChart3 },
+    { id: 'planning', label: 'Planification', icon: Calendar },
+    { id: 'chart', label: 'Analyses', icon: BarChart3 },
     { id: 'database', label: 'Données', icon: Database }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
         {/* Header */}
-        <header className="text-center mb-8">
+        <header className="text-center mb-6 sm:mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <Wallet className="text-white" size={32} />
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-2xl shadow-lg">
+              <Wallet className="text-white" size={28} />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">Budget Manager Pro</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Budget Manager
+            </h1>
           </div>
-          <p className="text-gray-600">Gérez votre budget avec un système de suivi complet</p>
+          <p className="text-gray-600 text-sm sm:text-base">Gérez votre budget avec simplicité et efficacité</p>
         </header>
 
         {/* Navigation */}
-        <nav className="mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-2 border border-gray-200">
-            <div className="flex flex-wrap gap-1">
+        <nav className="mb-6 sm:mb-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-1 border border-gray-200/50">
+            <div className="flex overflow-x-auto gap-1 pb-1">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex-1 min-w-0 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                    className={`flex-shrink-0 flex items-center justify-center gap-2 px-3 sm:px-4 py-3 rounded-xl font-medium transition-all duration-200 text-xs sm:text-sm whitespace-nowrap ${
                       activeTab === tab.id
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105'
+                        : 'text-gray-600 hover:bg-gray-100/80 hover:scale-102'
                     }`}
                   >
-                    <Icon size={16} />
+                    <Icon size={18} />
                     <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 );
@@ -267,23 +263,19 @@ function App() {
               onAddExpense={addExpense}
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
+              onAddCategory={addCategory}
             />
           )}
 
-          {activeTab === 'loans' && (
-            <LoanManager
+          {activeTab === 'planning' && (
+            <PlanningManager
               loans={loans}
+              futureExpenses={futureExpenses}
+              categories={categories}
               onAddLoan={addLoan}
               onUpdateLoan={updateLoan}
               onDeleteLoan={deleteLoan}
               onToggleLoan={toggleLoan}
-            />
-          )}
-
-          {activeTab === 'future' && (
-            <FutureExpenses
-              futureExpenses={futureExpenses}
-              categories={categories}
               onAddFutureExpense={addFutureExpense}
               onUpdateFutureExpense={updateFutureExpense}
               onDeleteFutureExpense={deleteFutureExpense}
@@ -291,26 +283,7 @@ function App() {
           )}
 
           {activeTab === 'chart' && (
-            <ExpenseChart expenses={expenses} categories={categories} />
-          )}
-
-          {activeTab === 'report' && (
-            <MonthlyReport 
-              incomes={incomes} 
-              expenses={expenses} 
-              loans={loans}
-              futureExpenses={futureExpenses}
-              categories={categories} 
-            />
-          )}
-
-          {activeTab === 'categories' && (
-            <CategoryManager 
-              categories={categories}
-              onAddCategory={addCategory}
-              onUpdateCategory={updateCategory}
-              onDeleteCategory={deleteCategory}
-            />
+            <ExpenseChart expenses={expenses} categories={categories} incomes={incomes} />
           )}
 
           {activeTab === 'database' && (
@@ -319,8 +292,8 @@ function App() {
         </div>
 
         {/* Footer */}
-        <footer className="text-center mt-12 text-gray-500 text-sm">
-          <p>Budget Manager Pro - Système complet de gestion budgétaire</p>
+        <footer className="text-center mt-8 sm:mt-12 text-gray-400 text-xs sm:text-sm">
+          <p>Budget Manager - Votre assistant financier personnel</p>
         </footer>
       </div>
     </div>

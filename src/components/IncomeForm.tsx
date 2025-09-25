@@ -30,9 +30,9 @@ export const IncomeForm: React.FC<IncomeFormProps> = ({ onAddIncome }) => {
       <div className="mb-6">
         <button
           onClick={() => setIsOpen(true)}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg"
+          className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
         >
-          <Plus size={20} />
+          <Plus size={24} />
           Ajouter un Revenu
         </button>
       </div>
@@ -40,7 +40,7 @@ export const IncomeForm: React.FC<IncomeFormProps> = ({ onAddIncome }) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 border border-gray-200">
       <div className="flex items-center gap-2 mb-4">
         <DollarSign className="text-emerald-600" size={24} />
         <h3 className="text-lg font-semibold text-gray-800">Nouveau Revenu</h3>
@@ -57,7 +57,7 @@ export const IncomeForm: React.FC<IncomeFormProps> = ({ onAddIncome }) => {
             min="0"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-base"
             placeholder="0.00"
             required
           />
@@ -71,23 +71,23 @@ export const IncomeForm: React.FC<IncomeFormProps> = ({ onAddIncome }) => {
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-base"
             placeholder="Ex: Salaire, Freelance, Bonus..."
             required
           />
         </div>
         
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200"
           >
             Ajouter
           </button>
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-xl transition-colors duration-200"
           >
             Annuler
           </button>
