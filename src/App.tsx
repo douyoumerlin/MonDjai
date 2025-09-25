@@ -78,6 +78,12 @@ function App() {
     setIncomes([...incomes, newIncome]);
   };
 
+  const updateIncome = (id: string, updates: Partial<Income>) => {
+    setIncomes(incomes.map(income => 
+      income.id === id ? { ...income, ...updates } : income
+    ));
+  };
+
   // Gestion des dépenses
   const addExpense = (expenseData: Omit<Expense, 'id' | 'date'>) => {
     const newExpense: Expense = {
@@ -252,7 +258,12 @@ function App() {
           )}
 
           {activeTab === 'income' && (
-            <IncomeForm onAddIncome={addIncome} />
+            <IncomeForm 
+              incomes={incomes}
+              onAddIncome={addIncome} 
+              onUpdateIncome={updateIncome}
+              onDeleteIncome={deleteIncome}
+            />
           )}
 
           {activeTab === 'expenses' && (
