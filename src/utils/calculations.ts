@@ -1,4 +1,4 @@
-import { Income, Expense, ExpenseCategory, CategoryStats, CustomCategory } from '../types';
+import { Income, Expense, Loan, FutureExpense, ExpenseCategory, CategoryStats, CustomCategory } from '../types';
 
 export const calculateTotalIncome = (incomes: Income[]): number => {
   return incomes.reduce((total, income) => total + income.amount, 0);
@@ -8,9 +8,105 @@ export const calculateTotalExpenses = (expenses: Expense[]): number => {
   return expenses.reduce((total, expense) => total + expense.amount, 0);
 };
 
-export const calculateBalance = (incomes: Income[], expenses: Expense[]): number => {
-  return calculateTotalIncome(incomes) - calculateTotalExpenses(expenses);
+export const calculatePaidExpenses = (expenses: Expense[]): number => {
+  return expenses
+    .filter(expense => expense.isPaid)
+    .reduce((total, expense) => total + expense.amount, 0);
 };
+
+export const calculateUnpaidExpenses = (expenses: Expense[]): number => {
+  return expenses
+    .filter(expense => !expense.isPaid)
+    .reduce((total, expense) => total + expense.amount, 0);
+};
+
+export const calculateTotalLoans = (loans: Loan[]): number => {
+  return loans.reduce((total, loan) => total + loan.amount, 0);
+};
+
+export const calculatePaidLoans = (loans: Loan[]): number => {
+  return loans
+    .filter(loan => loan.isPaid)
+    .reduce((total, loan) => total + loan.amount, 0);
+};
+
+export const calculateUnpaidLoans = (loans: Loan[]): number => {
+  return loans
+    .filter(loan => !loan.isPaid)
+    .reduce((total, loan) => total + loan.amount, 0);
+};
+
+export const calculateTotalFutureExpenses = (futureExpenses: FutureExpense[]): number => {
+  return futureExpenses.reduce((total, expense) => total + expense.amount, 0);
+};
+
+export const calculateRemainingBudget = (incomes: Income[], expenses: Expense[]): number => {
+  const totalIncome = calculateTotalIncome(incomes);
+  const paidExpenses = calculatePaidExpenses(expenses);
+  return totalIncome - paidExpenses;
+};
+
+export const calculateProjectedBalance = (
+  incomes: Income[], 
+  expenses: Expense[], 
+  loans: Loan[], 
+  futureExpenses: FutureExpense[]
+): number => {
+  const totalIncome = calculateTotalIncome(incomes);
+  const totalExpenses = calculateTotalExpenses(expenses);
+  const totalLoans = calculateTotalLoans(loans);
+  const totalFuture = calculateTotalFutureExpenses(futureExpenses);
+  
+  return totalIncome - totalExpenses - totalLoans - totalFuture;
+};
+
+export const getDefaultExpenses = (): Expense[] => [
+  {
+    id: '1',
+    amount: 150000,
+    description: 'Loyer',
+    category: 'Logement',
+    date: new Date().toISOString(),
+    isPaid: false,
+    isDefault: true
+  },
+  {
+    id: '2',
+    amount: 50000,
+    description: 'Électricité',
+    category: 'Logement',
+    date: new Date().toISOString(),
+    isPaid: false,
+    isDefault: true
+  },
+  {
+    id: '3',
+    amount: 80000,
+    description: 'Courses alimentaires',
+    category: 'Alimentation',
+    date: new Date().toISOString(),
+    isPaid: false,
+    isDefault: true
+  },
+  {
+    id: '4',
+    amount: 30000,
+    description: 'Transport',
+    category: 'Transport',
+    date: new Date().toISOString(),
+    isPaid: false,
+    isDefault: true
+  },
+  {
+    id: '5',
+    amount: 25000,
+    description: 'Téléphone',
+    category: 'Divers',
+    date: new Date().toISOString(),
+    isPaid: false,
+    isDefault: true
+  }
+];
 
 export const getDefaultCategories = (): CustomCategory[] => [
   { id: '1', name: 'Logement', icon: '🏠', color: '#3B82F6', isDefault: true },
@@ -26,14 +122,17 @@ export const getCategoryColor = (categoryName: string, categories: CustomCategor
 };
 
 export const calculateCategoryStats = (expenses: Expense[], categories: CustomCategory[]): CategoryStats[] => {
-  const totalExpenses = calculateTotalExpenses(expenses);
+  const paidExpenses = expenses.filter(expense => expense.isPaid);
+  const totalPaidExpenses = calculatePaidExpenses(expenses);
   
-  const usedCategories = [...new Set(expenses.map(expense => expense.category))];
+  if (totalPaidExpenses === 0) return [];
+  
+  const usedCategories = [...new Set(paidExpenses.map(expense => expense.category))];
   
   return usedCategories.map(categoryName => {
-    const categoryExpenses = expenses.filter(expense => expense.category === categoryName);
+    const categoryExpenses = paidExpenses.filter(expense => expense.category === categoryName);
     const amount = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
+    const percentage = (amount / totalPaidExpenses) * 100;
     
     return {
       category: categoryName,

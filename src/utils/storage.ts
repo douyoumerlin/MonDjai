@@ -4,6 +4,8 @@ export interface DatabaseBackup {
   data: {
     incomes: any[];
     expenses: any[];
+    loans: any[];
+    futureExpenses: any[];
     categories: any[];
   };
 }
@@ -12,12 +14,14 @@ export class LocalDatabase {
   private static readonly STORAGE_KEYS = {
     INCOMES: 'budget_incomes',
     EXPENSES: 'budget_expenses',
+    LOANS: 'budget_loans',
+    FUTURE_EXPENSES: 'budget_future_expenses',
     CATEGORIES: 'budget_categories',
     BACKUP_PREFIX: 'budget_backup_',
     SETTINGS: 'budget_settings'
   };
 
-  private static readonly VERSION = '1.0.0';
+  private static readonly VERSION = '2.0.0';
 
   // Sauvegarder les données
   static saveData<T>(key: string, data: T): void {
@@ -48,6 +52,8 @@ export class LocalDatabase {
       data: {
         incomes: this.loadData(this.STORAGE_KEYS.INCOMES, []),
         expenses: this.loadData(this.STORAGE_KEYS.EXPENSES, []),
+        loans: this.loadData(this.STORAGE_KEYS.LOANS, []),
+        futureExpenses: this.loadData(this.STORAGE_KEYS.FUTURE_EXPENSES, []),
         categories: this.loadData(this.STORAGE_KEYS.CATEGORIES, [])
       }
     };
@@ -64,6 +70,8 @@ export class LocalDatabase {
     try {
       this.saveData(this.STORAGE_KEYS.INCOMES, backup.data.incomes);
       this.saveData(this.STORAGE_KEYS.EXPENSES, backup.data.expenses);
+      this.saveData(this.STORAGE_KEYS.LOANS, backup.data.loans || []);
+      this.saveData(this.STORAGE_KEYS.FUTURE_EXPENSES, backup.data.futureExpenses || []);
       this.saveData(this.STORAGE_KEYS.CATEGORIES, backup.data.categories);
     } catch (error) {
       console.error('Erreur lors de la restauration:', error);
@@ -135,6 +143,8 @@ export class LocalDatabase {
     if (confirm('Êtes-vous sûr de vouloir effacer toutes les données ? Cette action est irréversible.')) {
       localStorage.removeItem(this.STORAGE_KEYS.INCOMES);
       localStorage.removeItem(this.STORAGE_KEYS.EXPENSES);
+      localStorage.removeItem(this.STORAGE_KEYS.LOANS);
+      localStorage.removeItem(this.STORAGE_KEYS.FUTURE_EXPENSES);
       localStorage.removeItem(this.STORAGE_KEYS.CATEGORIES);
       
       // Nettoyer aussi les sauvegardes

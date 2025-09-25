@@ -11,6 +11,24 @@ export interface Expense {
   description: string;
   category: ExpenseCategory;
   date: string;
+  isPaid: boolean;
+  isDefault: boolean;
+}
+
+export interface Loan {
+  id: string;
+  amount: number;
+  description: string;
+  date: string;
+  isPaid: boolean;
+}
+
+export interface FutureExpense {
+  id: string;
+  amount: number;
+  description: string;
+  category: ExpenseCategory;
+  expectedDate: string;
 }
 
 export type ExpenseCategory = string;
