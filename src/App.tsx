@@ -84,6 +84,12 @@ function App() {
     ));
   };
 
+  const deleteIncome = (id: string) => {
+    if (confirm('Supprimer ce revenu ?')) {
+      setIncomes(incomes.filter(income => income.id !== id));
+    }
+  };
+
   // Gestion des dépenses
   const addExpense = (expenseData: Omit<Expense, 'id' | 'date'>) => {
     const newExpense: Expense = {
