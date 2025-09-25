@@ -1,20 +1,21 @@
 import React from 'react';
 import { PieChart as PieChartIcon, TrendingUp, AlertTriangle, CheckCircle, Target } from 'lucide-react';
 import { Expense, CustomCategory } from '../types';
-import { calculateCategoryStats, formatCurrency, calculateTotalIncome, calculatePaidExpenses, calculateRemainingBudget } from '../utils/calculations';
-import { Income } from '../types';
+import { calculateCategoryStats, formatCurrency, calculateTotalIncome, calculatePaidExpenses, calculateRemainingBudgetWithLoans } from '../utils/calculations';
+import { Income, Loan } from '../types';
 
 interface ExpenseChartProps {
   expenses: Expense[];
   categories: CustomCategory[];
   incomes: Income[];
+  loans: Loan[];
 }
 
-export const ExpenseChart: React.FC<ExpenseChartProps> = ({ expenses, categories, incomes }) => {
+export const ExpenseChart: React.FC<ExpenseChartProps> = ({ expenses, categories, incomes, loans }) => {
   const categoryStats = calculateCategoryStats(expenses, categories);
   const totalIncome = calculateTotalIncome(incomes);
   const paidExpenses = calculatePaidExpenses(expenses);
-  const remainingBudget = calculateRemainingBudget(incomes, expenses);
+  const remainingBudget = calculateRemainingBudgetWithLoans(incomes, expenses, loans);
   const savingsRate = totalIncome > 0 ? ((remainingBudget / totalIncome) * 100) : 0;
 
   if (categoryStats.length === 0) {

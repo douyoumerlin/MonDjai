@@ -46,6 +46,13 @@ export const calculateRemainingBudget = (incomes: Income[], expenses: Expense[])
   return totalIncome - paidExpenses;
 };
 
+export const calculateRemainingBudgetWithLoans = (incomes: Income[], expenses: Expense[], loans: Loan[]): number => {
+  const totalIncome = calculateTotalIncome(incomes);
+  const paidExpenses = calculatePaidExpenses(expenses);
+  const paidLoans = calculatePaidLoans(loans);
+  return totalIncome - paidExpenses - paidLoans;
+};
+
 export const calculateProjectedBalance = (
   incomes: Income[], 
   expenses: Expense[], 

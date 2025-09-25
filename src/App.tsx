@@ -300,7 +300,7 @@ function App() {
           )}
 
           {activeTab === 'chart' && (
-            <ExpenseChart expenses={expenses} categories={categories} incomes={incomes} />
+            <ExpenseChart expenses={expenses} categories={categories} incomes={incomes} loans={loans} />
           )}
 
           {activeTab === 'database' && (

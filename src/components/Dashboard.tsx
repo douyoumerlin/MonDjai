@@ -5,7 +5,7 @@ import {
   calculateTotalIncome, 
   calculatePaidExpenses, 
   calculateUnpaidExpenses,
-  calculateRemainingBudget,
+  calculateRemainingBudgetWithLoans,
   calculateProjectedBalance,
   formatCurrency 
 } from '../utils/calculations';
@@ -21,7 +21,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
   const totalIncome = calculateTotalIncome(incomes);
   const paidExpenses = calculatePaidExpenses(expenses);
   const unpaidExpenses = calculateUnpaidExpenses(expenses);
-  const remainingBudget = calculateRemainingBudget(incomes, expenses);
+  const remainingBudget = calculateRemainingBudgetWithLoans(incomes, expenses, loans);
   const projectedBalance = calculateProjectedBalance(incomes, expenses, loans, futureExpenses);
 
   const stats = [
