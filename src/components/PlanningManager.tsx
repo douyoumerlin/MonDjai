@@ -142,7 +142,7 @@ export const PlanningManager: React.FC<PlanningManagerProps> = ({
           }`}
         >
           <Calendar size={18} />
-          À Prévoir
+          Dépenses à Prévoir
         </button>
       </div>
 
