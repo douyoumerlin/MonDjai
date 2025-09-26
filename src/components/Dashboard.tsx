@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Wallet, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { TrendingUp, Minus, Wallet, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Income, Expense, Loan, FutureExpense } from '../types';
 import { 
   calculateTotalIncome, 
@@ -36,7 +36,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
     {
       title: 'Dépenses Payées',
       amount: paidExpenses,
-      icon: TrendingDown,
+      icon: Minus,
       color: 'text-red-600',
       bg: 'bg-red-50',
       border: 'border-red-200'
