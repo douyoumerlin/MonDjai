@@ -36,7 +36,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
     {
       title: 'Dépenses Payées',
       amount: paidExpenses,
-      icon: CheckCircle,
+      icon: TrendingDown,
       color: 'text-red-600',
       bg: 'bg-red-50',
       border: 'border-red-200'
