@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Plus, BarChart3, Database, Calendar } from 'lucide-react';
+import { Wallet, Plus, BarChart3, Database, Calendar, Minus } from 'lucide-react';
 import { Income, Expense, Loan, FutureExpense, CustomCategory } from './types';
 import { Dashboard } from './components/Dashboard';
 import { IncomeForm } from './components/IncomeForm';
@@ -205,7 +205,7 @@ function App() {
   const tabs = [
     { id: 'overview', label: 'Accueil', icon: Wallet },
     { id: 'income', label: 'Revenus', icon: Plus },
-    { id: 'expenses', label: 'Dépenses', icon: BarChart3 },
+    { id: 'expenses', label: 'Dépenses', icon: Minus },
     { id: 'planning', label: 'Planification', icon: Calendar },
     { id: 'chart', label: 'Analyses', icon: BarChart3 },
     { id: 'database', label: 'Données', icon: Database }
