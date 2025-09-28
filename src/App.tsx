@@ -281,6 +281,7 @@ function App() {
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
               onAddCategory={addCategory}
+              onDeleteCategory={deleteCategory}
             />
           )}
 
