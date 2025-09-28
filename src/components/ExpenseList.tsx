@@ -11,9 +11,25 @@ interface ExpenseListProps {
   onUpdateExpense: (id: string, updates: Partial<Expense>) => void;
   onDeleteExpense: (id: string) => void;
   onAddCategory: (category: Omit<CustomCategory, 'id'>) => void;
+  onDeleteCategory: (id: string) => void;
 }
 
 const availableIcons = ['🏠', '🚗', '🍽️', '🎯', '📦', '💰', '🛒', '⚡', '🏥', '📚', '🎮', '✈️', '👕', '🎵', '🏋️', '🐕', '🎨', '🔧'];
+const availableIcons = [
+  '🏠', '🚗', '🍽️', '🎯', '📦', '💰', '🛒', '⚡', '🏥', '📚', 
+  '🎮', '✈️', '👕', '🎵', '🏋️', '🐕', '🎨', '🔧', '💊', '🎭',
+  '📱', '💻', '🎪', '🏖️', '🎿', '🚲', '🏊', '🎳', '🎯', '🎲',
+  '📷', '🎬', '🎤', '🎸', '🎹', '🥁', '🎺', '🎻', '🎪', '🎨',
+  '🍕', '🍔', '🍟', '🍗', '🍖', '🥩', '🍞', '🥖', '🧀', '🥚',
+  '☕', '🍵', '🥤', '🍺', '🍷', '🥂', '🍸', '🍹', '🧊', '🍯',
+  '🚌', '🚕', '🚙', '🚗', '🚘', '🚖', '🚔', '🚑', '🚒', '🚐',
+  '✈️', '🚁', '🚂', '🚆', '🚄', '🚅', '🚈', '🚝', '🚞', '🚋',
+  '🏥', '🏫', '🏪', '🏬', '🏭', '🏢', '🏣', '🏤', '🏦', '🏨',
+  '💼', '👔', '👗', '👠', '👜', '💍', '⌚', '👓', '🕶️', '🎩',
+  '🌱', '🌿', '🌳', '🌲', '🌴', '🌵', '🌾', '🌻', '🌺', '🌸',
+  '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸',
+  '🎪', '🎨', '🖌️', '🖍️', '✏️', '✒️', '🖊️', '🖋️', '📝', '📄'
+];
 const availableColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'];
 
 export const ExpenseList: React.FC<ExpenseListProps> = ({
@@ -23,8 +39,10 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
   onAddExpense,
   onUpdateExpense,
   onDeleteExpense,
-  onAddCategory
+  onAddCategory,
+  onDeleteCategory
 }) => {
+  const [categoryToDelete, setCategoryToDelete] = useState<CustomCategory | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -135,7 +153,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
             
             <div>
               <label className="block text-sm font-medium text-purple-700 mb-2">Icône</label>
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-8 gap-2 max-h-32 overflow-y-auto">
                 {availableIcons.map((icon) => (
                   <button
                     key={icon}
@@ -188,6 +206,47 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
               <X size={16} />
               Annuler
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmation de suppression */}
+      {categoryToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Supprimer la catégorie
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Êtes-vous sûr de vouloir supprimer la catégorie "{categoryToDelete.name}" ?
+              Cette action est irréversible.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  // Vérifier si la catégorie est utilisée
+                  const isUsedInExpenses = expenses.some(expense => expense.category === categoryToDelete.name);
+                  
+                  if (isUsedInExpenses) {
+                    alert('Cette catégorie ne peut pas être supprimée car elle est utilisée dans des dépenses existantes.');
+                    setCategoryToDelete(null);
+                    return;
+                  }
+                  
+                  onDeleteCategory(categoryToDelete.id);
+                  setCategoryToDelete(null);
+                }}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              >
+                Supprimer
+              </button>
+              <button
+                onClick={() => setCategoryToDelete(null)}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200"
+              >
+                Annuler
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -266,6 +325,46 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
           </div>
         </div>
       )}
+
+      {/* Section de gestion des catégories */}
+      <div className="mb-6">
+        <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+          <Palette size={18} />
+          Catégories Personnalisées
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {categories.filter(cat => !cat.isDefault).map((category) => (
+            <div
+              key={category.id}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors duration-200"
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm"
+                  style={{ backgroundColor: category.color }}
+                >
+                  {category.icon}
+                </div>
+                <span className="text-sm font-medium text-gray-800 truncate">
+                  {category.name}
+                </span>
+              </div>
+              <button
+                onClick={() => setCategoryToDelete(category)}
+                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200"
+                title="Supprimer cette catégorie"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+        {categories.filter(cat => !cat.isDefault).length === 0 && (
+          <div className="text-center py-6 text-gray-500 text-sm">
+            Aucune catégorie personnalisée créée
+          </div>
+        )}
+      </div>
 
       {/* Liste des dépenses */}
       <div className="space-y-3">
