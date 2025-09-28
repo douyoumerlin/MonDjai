@@ -183,7 +183,9 @@ function App() {
   };
 
   const deleteCategory = (id: string) => {
-    setCategories(categories.filter(cat => cat.id !== id));
+    if (confirm('Supprimer cette catégorie ?')) {
+      setCategories(categories.filter(cat => cat.id !== id));
+    }
   };
 
   const handleDataChange = () => {
@@ -269,6 +271,8 @@ function App() {
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
               onAddCategory={addCategory}
+              onUpdateCategory={updateCategory}
+              onDeleteCategory={deleteCategory}
             />
           )}
 

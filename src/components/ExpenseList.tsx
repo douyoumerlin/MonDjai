@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, CreditCard as Edit3, Save, X, Receipt } from 'lucide-react';
+import { Plus, Trash2, CreditCard as Edit3, Save, X, Receipt, Settings, Palette } from 'lucide-react';
 import { Expense, CustomCategory } from '../types';
 import { formatCurrency } from '../utils/calculations';
 
@@ -11,6 +11,8 @@ interface ExpenseListProps {
   onUpdateExpense: (id: string, updates: Partial<Expense>) => void;
   onDeleteExpense: (id: string) => void;
   onAddCategory: (category: Omit<CustomCategory, 'id'>) => void;
+  onUpdateCategory: (id: string, updates: Partial<CustomCategory>) => void;
+  onDeleteCategory: (id: string) => void;
 }
 
 const availableIcons = ['🏠', '🚗', '🍽️', '🎯', '📦', '💰', '🛒', '⚡', '🏥', '📚', '🎮', '✈️', '👕', '🎵', '🏋️', '🐕', '🎨', '🔧'];
@@ -23,11 +25,15 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
   onAddExpense,
   onUpdateExpense,
   onDeleteExpense,
-  onAddCategory
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isManagingCategories, setIsManagingCategories] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [newExpense, setNewExpense] = useState({
     amount: '',
     description: '',
@@ -75,6 +81,27 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
     setIsAddingCategory(false);
   };
 
+  const handleUpdateCategory = (id: string, field: string, value: any) => {
+    onUpdateCategory(id, { [field]: value });
+    if (field !== 'name') {
+      setEditingCategoryId(null);
+    }
+  };
+
+  const handleDeleteCategory = (id: string, categoryName: string) => {
+    // Vérifier si la catégorie est utilisée
+    const isUsed = expenses.some(expense => expense.category === categoryName);
+    
+    if (isUsed) {
+      alert(`Impossible de supprimer la catégorie "${categoryName}" car elle est utilisée par des dépenses.`);
+      return;
+    }
+    
+    if (confirm(`Supprimer la catégorie "${categoryName}" ?`)) {
+      onDeleteCategory(id);
+    }
+  };
+
   const handleUpdateExpense = (id: string, field: string, value: any) => {
     onUpdateExpense(id, { [field]: value });
     if (field !== 'amount' && field !== 'description') {
@@ -101,10 +128,17 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
         </div>
         <div className="flex gap-2">
           <button
+            onClick={() => setIsManagingCategories(true)}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl transition-colors duration-200 flex items-center gap-2"
+          >
+            <Settings size={16} />
+            Gérer
+          </button>
+          <button
             onClick={() => setIsAddingCategory(true)}
             className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition-colors duration-200 flex items-center gap-2"
           >
-            <Plus size={16} />
+            <Palette size={16} />
             Catégorie
           </button>
           <button
@@ -117,6 +151,143 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
         </div>
       </div>
 
+      {/* Section de gestion des catégories */}
+      {isManagingCategories && (
+        <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-medium text-gray-800 flex items-center gap-2">
+              <Settings className="text-gray-600" size={18} />
+              Gestion des Catégories
+            </h4>
+            <button
+              onClick={() => setIsManagingCategories(false)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            {categories.map((category) => {
+              const isUsed = expenses.some(expense => expense.category === category.name);
+              
+              return (
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shadow-sm"
+                      style={{ backgroundColor: category.color }}
+                    >
+                      {category.icon}
+                    </div>
+                    
+                    <div className="flex-1">
+                      {editingCategoryId === category.id ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={category.name}
+                            onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <div className="flex gap-1">
+                              {availableIcons.slice(0, 6).map((icon) => (
+                                <button
+                                  key={icon}
+                                  type="button"
+                                  onClick={() => handleUpdateCategory(category.id, 'icon', icon)}
+                                  className={`p-1 rounded border text-sm ${
+                                    category.icon === icon
+                                      ? 'bg-blue-100 border-blue-500'
+                                      : 'bg-white border-gray-300 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {icon}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex gap-1">
+                              {availableColors.slice(0, 5).map((color) => (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  onClick={() => handleUpdateCategory(category.id, 'color', color)}
+                                  className={`w-6 h-6 rounded-full border-2 ${
+                                    category.color === color
+                                      ? 'border-gray-800'
+                                      : 'border-gray-300'
+                                  }`}
+                                  style={{ backgroundColor: color }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="font-medium text-gray-800 flex items-center gap-2">
+                            {category.name}
+                            {category.isDefault && (
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                Par défaut
+                              </span>
+                            )}
+                            {isUsed && (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                Utilisée
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {expenses.filter(e => e.category === category.name).length} dépense(s)
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-1">
+                    {editingCategoryId === category.id ? (
+                      <button
+                        onClick={() => setEditingCategoryId(null)}
+                        className="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors duration-200"
+                      >
+                        <Save size={16} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setEditingCategoryId(category.id)}
+                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                    )}
+                    
+                    {!category.isDefault && (
+                      <button
+                        onClick={() => handleDeleteCategory(category.id, category.name)}
+                        className={`p-2 rounded-lg transition-colors duration-200 ${
+                          isUsed 
+                            ? 'text-gray-300 cursor-not-allowed' 
+                            : 'text-gray-500 hover:text-red-600 hover:bg-red-100'
+                        }`}
+                        disabled={isUsed}
+                        title={isUsed ? 'Impossible de supprimer une catégorie utilisée' : 'Supprimer cette catégorie'}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* Formulaire d'ajout de catégorie */}
       {isAddingCategory && (
         <div className="bg-purple-50 rounded-xl p-4 mb-4 border border-purple-200">
