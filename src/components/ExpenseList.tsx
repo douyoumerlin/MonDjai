@@ -320,21 +320,19 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
                                   Modifier
                                 </button>
                                 
-                                {!category.isDefault && (
-                                  <button
-                                    onClick={() => handleDeleteCategory(category.id, category.name)}
-                                    disabled={isUsed}
-                                    className={`flex-1 px-3 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm ${
-                                      isUsed 
-                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                                        : 'bg-red-500 hover:bg-red-600 text-white'
-                                    }`}
-                                    title={isUsed ? 'Impossible de supprimer une catégorie utilisée' : 'Supprimer cette catégorie'}
-                                  >
-                                    <Trash2 size={14} />
-                                    Supprimer
-                                  </button>
-                                )}
+                                <button
+                                  onClick={() => handleDeleteCategory(category.id, category.name)}
+                                  disabled={isUsed}
+                                  className={`flex-1 px-3 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm ${
+                                    isUsed 
+                                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                                      : 'bg-red-500 hover:bg-red-600 text-white'
+                                  }`}
+                                  title={isUsed ? 'Impossible de supprimer une catégorie utilisée' : 'Supprimer cette catégorie'}
+                                >
+                                  <Trash2 size={14} />
+                                  Supprimer
+                                </button>
                               </div>
                             </div>
                           )}
