@@ -183,18 +183,6 @@ function App() {
   };
 
   const deleteCategory = (id: string) => {
-    const categoryToDelete = categories.find(cat => cat.id === id);
-    if (!categoryToDelete) return;
-
-    // Vérifier si la catégorie est utilisée
-    const isUsedInExpenses = expenses.some(expense => expense.category === categoryToDelete.name);
-    const isUsedInFuture = futureExpenses.some(expense => expense.category === categoryToDelete.name);
-    
-    if (isUsedInExpenses || isUsedInFuture) {
-      alert('Cette catégorie ne peut pas être supprimée car elle est utilisée dans des dépenses existantes.');
-      return;
-    }
-
     setCategories(categories.filter(cat => cat.id !== id));
   };
 
@@ -281,7 +269,6 @@ function App() {
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
               onAddCategory={addCategory}
-              onDeleteCategory={deleteCategory}
             />
           )}
 
