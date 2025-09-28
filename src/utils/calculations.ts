@@ -72,7 +72,7 @@ export const getDefaultExpenses = (): Expense[] => [
     id: '1',
     amount: 150000,
     description: 'Loyer',
-    category: 'Logement',
+    category: 'Logement & charges fixes',
     date: new Date().toISOString(),
     isPaid: false,
     isDefault: true
@@ -81,7 +81,7 @@ export const getDefaultExpenses = (): Expense[] => [
     id: '2',
     amount: 50000,
     description: 'Électricité',
-    category: 'Logement',
+    category: 'Logement & charges fixes',
     date: new Date().toISOString(),
     isPaid: false,
     isDefault: true
@@ -116,11 +116,16 @@ export const getDefaultExpenses = (): Expense[] => [
 ];
 
 export const getDefaultCategories = (): CustomCategory[] => [
-  { id: '1', name: 'Logement', icon: '🏠', color: '#3B82F6', isDefault: true },
+  { id: '1', name: 'Logement & charges fixes', icon: '🏠', color: '#3B82F6', isDefault: true },
   { id: '2', name: 'Transport', icon: '🚗', color: '#10B981', isDefault: true },
   { id: '3', name: 'Alimentation', icon: '🍽️', color: '#F59E0B', isDefault: true },
-  { id: '4', name: 'Loisirs', icon: '🎯', color: '#EF4444', isDefault: true },
-  { id: '5', name: 'Divers', icon: '📦', color: '#8B5CF6', isDefault: true }
+  { id: '4', name: 'Santé & bien-être', icon: '🏥', color: '#EF4444', isDefault: true },
+  { id: '5', name: 'Habits & accessoires', icon: '👕', color: '#EC4899', isDefault: true },
+  { id: '6', name: 'Loisirs & sorties', icon: '🎯', color: '#06B6D4', isDefault: true },
+  { id: '7', name: 'Éducation & développement', icon: '📚', color: '#84CC16', isDefault: true },
+  { id: '8', name: 'Famille & obligations', icon: '👨‍👩‍👧‍👦', color: '#F97316', isDefault: true },
+  { id: '9', name: 'Divers', icon: '📦', color: '#8B5CF6', isDefault: true },
+  { id: '10', name: 'Épargne & dettes', icon: '💰', color: '#6366F1', isDefault: true }
 ];
 
 export const getCategoryColor = (categoryName: string, categories: CustomCategory[]): string => {
