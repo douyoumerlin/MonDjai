@@ -30,8 +30,8 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
   onDeleteCategory
 }) => {
   const [isAdding, setIsAdding] = useState(false);
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
-  const [isManagingCategories, setIsManagingCategories] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [categoryAction, setCategoryAction] = useState<'list' | 'add' | 'edit'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [newExpense, setNewExpense] = useState({
@@ -44,7 +44,8 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
   const [newCategory, setNewCategory] = useState({
     name: '',
     icon: '📦',
-    color: '#6B7280'
+    color: '#6B7280',
+    isDefault: false
   });
 
   const handleAddExpense = () => {
@@ -77,8 +78,8 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
       isDefault: false
     });
     
-    setNewCategory({ name: '', icon: '📦', color: '#6B7280' });
-    setIsAddingCategory(false);
+    setNewCategory({ name: '', icon: '📦', color: '#6B7280', isDefault: false });
+    setCategoryAction('list');
   };
 
   const handleUpdateCategory = (id: string, field: string, value: any) => {
@@ -128,14 +129,10 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => setIsManagingCategories(true)}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl transition-colors duration-200 flex items-center gap-2"
-          >
-            <Settings size={16} />
-            Gérer
-          </button>
-          <button
-            onClick={() => setIsAddingCategory(true)}
+            onClick={() => {
+              setIsCategoryModalOpen(true);
+              setCategoryAction('list');
+            }}
             className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition-colors duration-200 flex items-center gap-2"
           >
             <Palette size={16} />
@@ -151,214 +148,305 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
         </div>
       </div>
 
-      {/* Section de gestion des catégories */}
-      {isManagingCategories && (
-        <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="font-medium text-gray-800 flex items-center gap-2">
-              <Settings className="text-gray-600" size={18} />
-              Gestion des Catégories
-            </h4>
-            <button
-              onClick={() => setIsManagingCategories(false)}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-            >
-              <X size={16} />
-            </button>
-          </div>
-          
-          <div className="space-y-3">
-            {categories.map((category) => {
-              const isUsed = expenses.some(expense => expense.category === category.name);
-              
-              return (
-                <div
-                  key={category.id}
-                  className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 hover:shadow-sm transition-all duration-200"
+      {/* Modal de gestion des catégories */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header du modal */}
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Palette size={24} />
+                  <h2 className="text-xl font-bold">Gestion des Catégories</h2>
+                </div>
+                <button
+                  onClick={() => setIsCategoryModalOpen(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shadow-sm"
-                      style={{ backgroundColor: category.color }}
-                    >
-                      {category.icon}
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {/* Navigation du modal */}
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setCategoryAction('list')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    categoryAction === 'list'
+                      ? 'bg-white text-purple-600'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Liste
+                </button>
+                <button
+                  onClick={() => {
+                    setCategoryAction('add');
+                    setNewCategory({ name: '', icon: '📦', color: '#6B7280', isDefault: false });
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    categoryAction === 'add'
+                      ? 'bg-white text-purple-600'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  Ajouter
+                </button>
+              </div>
+            </div>
+
+            {/* Contenu du modal */}
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              {/* Vue Liste */}
+              {categoryAction === 'list' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Catégories ({categories.length})
+                    </h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {categories.map((category) => {
+                      const isUsed = expenses.some(expense => expense.category === category.name);
+                      const expenseCount = expenses.filter(e => e.category === category.name).length;
+                      
+                      return (
+                        <div
+                          key={category.id}
+                          className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200"
+                        >
+                          {editingCategoryId === category.id ? (
+                            <div className="space-y-3">
+                              <input
+                                type="text"
+                                value={category.name}
+                                onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500"
+                                placeholder="Nom de la catégorie"
+                              />
+                              
+                              <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-2">Icône</label>
+                                <div className="grid grid-cols-6 gap-1">
+                                  {availableIcons.slice(0, 12).map((icon) => (
+                                    <button
+                                      key={icon}
+                                      type="button"
+                                      onClick={() => handleUpdateCategory(category.id, 'icon', icon)}
+                                      className={`p-2 rounded border text-sm transition-all duration-200 ${
+                                        category.icon === icon
+                                          ? 'bg-purple-100 border-purple-500'
+                                          : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                                      }`}
+                                    >
+                                      {icon}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-2">Couleur</label>
+                                <div className="grid grid-cols-5 gap-2">
+                                  {availableColors.map((color) => (
+                                    <button
+                                      key={color}
+                                      type="button"
+                                      onClick={() => handleUpdateCategory(category.id, 'color', color)}
+                                      className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                                        category.color === color
+                                          ? 'border-gray-800 scale-110'
+                                          : 'border-gray-300 hover:scale-105'
+                                      }`}
+                                      style={{ backgroundColor: color }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2 pt-2">
+                                <button
+                                  onClick={() => setEditingCategoryId(null)}
+                                  className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+                                >
+                                  <Save size={14} />
+                                  Sauvegarder
+                                </button>
+                                <button
+                                  onClick={() => setEditingCategoryId(null)}
+                                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+                                >
+                                  <X size={14} />
+                                  Annuler
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-center gap-3 mb-3">
+                                <div
+                                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shadow-sm"
+                                  style={{ backgroundColor: category.color }}
+                                >
+                                  {category.icon}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-800 flex items-center gap-2 flex-wrap">
+                                    {category.name}
+                                    {category.isDefault && (
+                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                        Défaut
+                                      </span>
+                                    )}
+                                    {isUsed && (
+                                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                        Utilisée
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {expenseCount} dépense{expenseCount !== 1 ? 's' : ''}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setEditingCategoryId(category.id)}
+                                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+                                >
+                                  <Edit3 size={14} />
+                                  Modifier
+                                </button>
+                                
+                                {!category.isDefault && (
+                                  <button
+                                    onClick={() => handleDeleteCategory(category.id, category.name)}
+                                    disabled={isUsed}
+                                    className={`flex-1 px-3 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm ${
+                                      isUsed 
+                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                                        : 'bg-red-500 hover:bg-red-600 text-white'
+                                    }`}
+                                    title={isUsed ? 'Impossible de supprimer une catégorie utilisée' : 'Supprimer cette catégorie'}
+                                  >
+                                    <Trash2 size={14} />
+                                    Supprimer
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Vue Ajout */}
+              {categoryAction === 'add' && (
+                <div className="max-w-2xl mx-auto">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-6">Nouvelle Catégorie</h3>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nom de la catégorie
+                      </label>
+                      <input
+                        type="text"
+                        value={newCategory.name}
+                        onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Ex: Santé, Éducation, Voyages..."
+                      />
                     </div>
                     
-                    <div className="flex-1">
-                      {editingCategoryId === category.id ? (
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            value={category.name}
-                            onChange={(e) => handleUpdateCategory(category.id, 'name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Choisir une icône
+                      </label>
+                      <div className="grid grid-cols-6 sm:grid-cols-9 gap-3">
+                        {availableIcons.map((icon) => (
+                          <button
+                            key={icon}
+                            type="button"
+                            onClick={() => setNewCategory({ ...newCategory, icon })}
+                            className={`p-3 rounded-xl border-2 transition-all duration-200 text-lg ${
+                              newCategory.icon === icon
+                                ? 'bg-purple-100 border-purple-500 scale-110'
+                                : 'bg-gray-50 border-gray-300 hover:bg-gray-100 hover:scale-105'
+                            }`}
+                          >
+                            {icon}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Choisir une couleur
+                      </label>
+                      <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
+                        {availableColors.map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setNewCategory({ ...newCategory, color })}
+                            className={`w-12 h-12 rounded-full border-3 transition-all duration-200 ${
+                              newCategory.color === color
+                                ? 'border-gray-800 scale-110 shadow-lg'
+                                : 'border-gray-300 hover:scale-105 hover:shadow-md'
+                            }`}
+                            style={{ backgroundColor: color }}
                           />
-                          <div className="flex gap-2">
-                            <div className="flex gap-1">
-                              {availableIcons.slice(0, 6).map((icon) => (
-                                <button
-                                  key={icon}
-                                  type="button"
-                                  onClick={() => handleUpdateCategory(category.id, 'icon', icon)}
-                                  className={`p-1 rounded border text-sm ${
-                                    category.icon === icon
-                                      ? 'bg-blue-100 border-blue-500'
-                                      : 'bg-white border-gray-300 hover:bg-gray-50'
-                                  }`}
-                                >
-                                  {icon}
-                                </button>
-                              ))}
-                            </div>
-                            <div className="flex gap-1">
-                              {availableColors.slice(0, 5).map((color) => (
-                                <button
-                                  key={color}
-                                  type="button"
-                                  onClick={() => handleUpdateCategory(category.id, 'color', color)}
-                                  className={`w-6 h-6 rounded-full border-2 ${
-                                    category.color === color
-                                      ? 'border-gray-800'
-                                      : 'border-gray-300'
-                                  }`}
-                                  style={{ backgroundColor: color }}
-                                />
-                              ))}
-                            </div>
-                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Aperçu */}
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Aperçu</h4>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shadow-sm"
+                          style={{ backgroundColor: newCategory.color }}
+                        >
+                          {newCategory.icon}
                         </div>
-                      ) : (
                         <div>
-                          <div className="font-medium text-gray-800 flex items-center gap-2">
-                            {category.name}
-                            {category.isDefault && (
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                Par défaut
-                              </span>
-                            )}
-                            {isUsed && (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                Utilisée
-                              </span>
-                            )}
+                          <div className="font-medium text-gray-800">
+                            {newCategory.name || 'Nom de la catégorie'}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {expenses.filter(e => e.category === category.name).length} dépense(s)
-                          </div>
+                          <div className="text-sm text-gray-500">Nouvelle catégorie</div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="flex gap-1">
-                    {editingCategoryId === category.id ? (
-                      <button
-                        onClick={() => setEditingCategoryId(null)}
-                        className="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors duration-200"
-                      >
-                        <Save size={16} />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => setEditingCategoryId(category.id)}
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                    )}
-                    
-                    {!category.isDefault && (
-                      <button
-                        onClick={() => handleDeleteCategory(category.id, category.name)}
-                        className={`p-2 rounded-lg transition-colors duration-200 ${
-                          isUsed 
-                            ? 'text-gray-300 cursor-not-allowed' 
-                            : 'text-gray-500 hover:text-red-600 hover:bg-red-100'
-                        }`}
-                        disabled={isUsed}
-                        title={isUsed ? 'Impossible de supprimer une catégorie utilisée' : 'Supprimer cette catégorie'}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                  <div className="flex gap-3 mt-8">
+                    <button
+                      onClick={handleAddCategory}
+                      disabled={!newCategory.name.trim()}
+                      className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
+                    >
+                      <Plus size={18} />
+                      Créer la catégorie
+                    </button>
+                    <button
+                      onClick={() => setCategoryAction('list')}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
+                    >
+                      <X size={18} />
+                      Annuler
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {/* Formulaire d'ajout de catégorie */}
-      {isAddingCategory && (
-        <div className="bg-purple-50 rounded-xl p-4 mb-4 border border-purple-200">
-          <h4 className="font-medium text-purple-800 mb-3">Nouvelle Catégorie</h4>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-purple-700 mb-2">Nom</label>
-              <input
-                type="text"
-                value={newCategory.name}
-                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                className="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Ex: Santé, Éducation..."
-              />
+              )}
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-purple-700 mb-2">Icône</label>
-              <div className="grid grid-cols-6 gap-2">
-                {availableIcons.map((icon) => (
-                  <button
-                    key={icon}
-                    type="button"
-                    onClick={() => setNewCategory({ ...newCategory, icon })}
-                    className={`p-2 rounded-lg border transition-all duration-200 ${
-                      newCategory.icon === icon
-                        ? 'bg-purple-100 border-purple-500'
-                        : 'bg-white border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-purple-700 mb-2">Couleur</label>
-              <div className="grid grid-cols-5 gap-2">
-                {availableColors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setNewCategory({ ...newCategory, color })}
-                    className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                      newCategory.color === color
-                        ? 'border-gray-800 scale-110'
-                        : 'border-gray-300 hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={handleAddCategory}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
-            >
-              <Save size={16} />
-              Ajouter
-            </button>
-            <button
-              onClick={() => setIsAddingCategory(false)}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
-            >
-              <X size={16} />
-              Annuler
-            </button>
           </div>
         </div>
       )}
