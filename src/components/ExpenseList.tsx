@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit3, Save, X, Receipt } from 'lucide-react';
+import { Plus, Trash2, CreditCard as Edit3, Save, X, Receipt } from 'lucide-react';
 import { Expense, CustomCategory } from '../types';
 import { formatCurrency } from '../utils/calculations';
 
