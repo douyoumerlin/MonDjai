@@ -229,7 +229,7 @@ function App() {
     { id: 'overview', label: 'Accueil', icon: Wallet },
     { id: 'income', label: 'Revenus', icon: Plus },
     { id: 'budgetLines', label: 'Budget', icon: Receipt },
-    { id: 'dailyExpenses', label: 'Daily', icon: TrendingDown },
+    { id: 'dailyExpenses', label: 'Dépenses', icon: Minus },
     { id: 'planning', label: 'Planification', icon: Calendar },
     { id: 'chart', label: 'Analyses', icon: BarChart3 },
     { id: 'database', label: 'Données', icon: Database }
