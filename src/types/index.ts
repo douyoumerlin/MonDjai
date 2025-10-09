@@ -47,3 +47,20 @@ export interface CategoryStats {
   percentage: number;
   color: string;
 }
+
+export interface BudgetLine {
+  id: string;
+  description: string;
+  category: string;
+  plannedAmount: number;
+  createdAt: string;
+}
+
+export interface DailyExpense {
+  id: string;
+  budgetLineId: string;
+  amount: number;
+  description: string;
+  expenseDate: string;
+  createdAt: string;
+}

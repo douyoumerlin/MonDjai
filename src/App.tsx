@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Plus, BarChart3, Database, Calendar, Minus } from 'lucide-react';
-import { Income, Expense, Loan, FutureExpense, CustomCategory } from './types';
+import { Wallet, Plus, BarChart3, Database, Calendar, Minus, TrendingDown, Receipt } from 'lucide-react';
+import { Income, Expense, Loan, FutureExpense, CustomCategory, BudgetLine } from './types';
 import { Dashboard } from './components/Dashboard';
 import { IncomeForm } from './components/IncomeForm';
 import { ExpenseList } from './components/ExpenseList';
 import { PlanningManager } from './components/PlanningManager';
 import { ExpenseChart } from './components/ExpenseChart';
 import { DatabaseManager } from './components/DatabaseManager';
+import { BudgetLinesList } from './components/BudgetLinesList';
+import { DailyExpenses } from './components/DailyExpenses';
 import { getDefaultCategories, getDefaultExpenses } from './utils/calculations';
 import { LocalDatabase } from './utils/storage';
+import { supabase } from './utils/supabase';
 
 const STORAGE_KEYS = {
   INCOMES: 'budget_incomes',
@@ -24,7 +27,8 @@ function App() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [categories, setCategories] = useState<CustomCategory[]>(getDefaultCategories());
-  const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'expenses' | 'planning' | 'chart' | 'database'>('overview');
+  const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
+  const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'expenses' | 'budgetLines' | 'dailyExpenses' | 'planning' | 'chart' | 'database'>('overview');
 
   // Charger les données depuis le localStorage
   const loadData = () => {
@@ -45,7 +49,31 @@ function App() {
 
   useEffect(() => {
     loadData();
+    loadBudgetLines();
   }, []);
+
+  const loadBudgetLines = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('budget_lines')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedData: BudgetLine[] = (data || []).map((item: any) => ({
+        id: item.id,
+        description: item.description,
+        category: item.category,
+        plannedAmount: parseFloat(item.planned_amount),
+        createdAt: item.created_at
+      }));
+
+      setBudgetLines(formattedData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des lignes budgétaires:', error);
+    }
+  };
 
   // Sauvegarder dans le localStorage
   useEffect(() => {
@@ -192,10 +220,16 @@ function App() {
     loadData();
   };
 
+  const handleBudgetLinesChange = () => {
+    loadBudgetLines();
+  };
+
   const tabs = [
     { id: 'overview', label: 'Accueil', icon: Wallet },
     { id: 'income', label: 'Revenus', icon: Plus },
     { id: 'expenses', label: 'Dépenses', icon: Minus },
+    { id: 'budgetLines', label: 'Budget', icon: Receipt },
+    { id: 'dailyExpenses', label: 'Daily', icon: TrendingDown },
     { id: 'planning', label: 'Planification', icon: Calendar },
     { id: 'chart', label: 'Analyses', icon: BarChart3 },
     { id: 'database', label: 'Données', icon: Database }
@@ -274,6 +308,17 @@ function App() {
               onUpdateCategory={updateCategory}
               onDeleteCategory={deleteCategory}
             />
+          )}
+
+          {activeTab === 'budgetLines' && (
+            <BudgetLinesList
+              categories={categories}
+              onBudgetLinesChange={handleBudgetLinesChange}
+            />
+          )}
+
+          {activeTab === 'dailyExpenses' && (
+            <DailyExpenses budgetLines={budgetLines} />
           )}
 
           {activeTab === 'planning' && (
