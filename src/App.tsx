@@ -29,7 +29,7 @@ function App() {
   const [categories, setCategories] = useState<CustomCategory[]>(getDefaultCategories());
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
   const [dailyExpenses, setDailyExpenses] = useState<DailyExpense[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'expenses' | 'budgetLines' | 'dailyExpenses' | 'planning' | 'chart' | 'database'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'budgetLines' | 'dailyExpenses' | 'planning' | 'chart' | 'database'>('overview');
 
   // Charger les données depuis le localStorage
   const loadData = () => {
@@ -257,7 +257,6 @@ function App() {
   const tabs = [
     { id: 'overview', label: 'Accueil', icon: Wallet },
     { id: 'income', label: 'Revenus', icon: Plus },
-    { id: 'expenses', label: 'Dépenses', icon: Minus },
     { id: 'budgetLines', label: 'Budget', icon: Receipt },
     { id: 'dailyExpenses', label: 'Daily', icon: TrendingDown },
     { id: 'planning', label: 'Planification', icon: Calendar },
@@ -325,20 +324,6 @@ function App() {
               onAddIncome={addIncome} 
               onUpdateIncome={updateIncome}
               onDeleteIncome={deleteIncome}
-            />
-          )}
-
-          {activeTab === 'expenses' && (
-            <ExpenseList
-              expenses={expenses}
-              categories={categories}
-              onToggleExpense={toggleExpense}
-              onAddExpense={addExpense}
-              onUpdateExpense={updateExpense}
-              onDeleteExpense={deleteExpense}
-              onAddCategory={addCategory}
-              onUpdateCategory={updateCategory}
-              onDeleteCategory={deleteCategory}
             />
           )}
 
