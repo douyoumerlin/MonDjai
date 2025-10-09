@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Receipt, AlertCircle, Edit3, Save, X, Palette } from 'lucide-react';
-import { BudgetLine, CustomCategory, DailyExpense } from '../types';
+import { BudgetLine, CustomCategory, DailyExpense, Income } from '../types';
 import { formatCurrency } from '../utils/calculations';
 import { supabase } from '../utils/supabase';
 
 interface BudgetLinesListProps {
   categories: CustomCategory[];
+  incomes: Income[];
   onBudgetLinesChange: () => void;
   onAddCategory: (category: Omit<CustomCategory, 'id'>) => void;
   onUpdateCategory: (id: string, updates: Partial<CustomCategory>) => void;
@@ -17,6 +18,7 @@ const availableColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', 
 
 export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
   categories,
+  incomes,
   onBudgetLinesChange,
   onAddCategory,
   onUpdateCategory,
@@ -97,6 +99,15 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
   const handleAddBudgetLine = async () => {
     if (!newBudgetLine.description || !newBudgetLine.plannedAmount) return;
 
+    const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
+    const currentBudgetTotal = budgetLines.reduce((sum, line) => sum + line.plannedAmount, 0);
+    const newTotal = currentBudgetTotal + parseFloat(newBudgetLine.plannedAmount);
+
+    if (newTotal > totalIncome) {
+      alert(`Le budget total (${formatCurrency(newTotal)}) ne peut pas dépasser les revenus totaux (${formatCurrency(totalIncome)}).`);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('budget_lines')
@@ -135,6 +146,19 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
   const handleUpdateBudgetLine = async (id: string, field: string, value: any) => {
     const line = budgetLines.find(l => l.id === id);
     if (!line) return;
+
+    if (field === 'plannedAmount') {
+      const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
+      const currentBudgetTotal = budgetLines
+        .filter(l => l.id !== id)
+        .reduce((sum, l) => sum + l.plannedAmount, 0);
+      const newTotal = currentBudgetTotal + parseFloat(value);
+
+      if (newTotal > totalIncome) {
+        alert(`Le budget total (${formatCurrency(newTotal)}) ne peut pas dépasser les revenus totaux (${formatCurrency(totalIncome)}).`);
+        return;
+      }
+    }
 
     const updatedData: any = {};
     if (field === 'description') updatedData.description = value;

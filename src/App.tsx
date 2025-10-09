@@ -345,6 +345,7 @@ function App() {
           {activeTab === 'budgetLines' && (
             <BudgetLinesList
               categories={categories}
+              incomes={incomes}
               onBudgetLinesChange={handleBudgetLinesChange}
               onAddCategory={addCategory}
               onUpdateCategory={updateCategory}
