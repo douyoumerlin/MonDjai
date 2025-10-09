@@ -40,6 +40,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
 
   const stats = [
     {
+      title: 'Revenus Totaux',
+      amount: totalIncome,
+      icon: TrendingUp,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200'
+    },
+    {
       title: 'Budget Planifié',
       amount: totalBudgetPlanned,
       icon: Receipt,
@@ -59,18 +67,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
       title: 'Budget Restant',
       amount: budgetRemaining,
       icon: budgetRemaining >= 0 ? Wallet : AlertCircle,
-      color: budgetRemaining >= 0 ? 'text-emerald-600' : 'text-red-600',
-      bg: budgetRemaining >= 0 ? 'bg-emerald-50' : 'bg-red-50',
-      border: budgetRemaining >= 0 ? 'border-emerald-200' : 'border-red-200'
-    },
-    {
-      title: 'Lignes en Alerte',
-      amount: linesWithWarnings,
-      icon: linesWithWarnings > 0 ? AlertCircle : CheckCircle,
-      color: linesWithWarnings > 0 ? 'text-orange-600' : 'text-green-600',
-      bg: linesWithWarnings > 0 ? 'bg-orange-50' : 'bg-green-50',
-      border: linesWithWarnings > 0 ? 'border-orange-200' : 'border-green-200',
-      isCount: true
+      color: budgetRemaining >= 0 ? 'text-blue-600' : 'text-red-600',
+      bg: budgetRemaining >= 0 ? 'bg-blue-50' : 'bg-red-50',
+      border: budgetRemaining >= 0 ? 'border-blue-200' : 'border-red-200'
     }
   ];
 
@@ -88,7 +87,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ incomes, expenses, loans, 
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
                   <p className={`text-lg sm:text-xl font-bold ${stat.color}`}>
-                    {stat.isCount ? stat.amount : formatCurrency(stat.amount)}
+                    {formatCurrency(stat.amount)}
                   </p>
                 </div>
                 <div className={`${stat.color} p-3 rounded-xl ${stat.bg} shadow-sm`}>
