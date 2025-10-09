@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, TrendingDown, Edit3, Save, X } from 'lucide-react';
 import { BudgetLine, DailyExpense } from '../types';
 import { formatCurrency } from '../utils/calculations';
-import { supabase } from '../utils/supabase';
+import { LocalDatabase } from '../utils/storage';
 
 interface DailyExpensesProps {
   budgetLines: BudgetLine[];
@@ -29,26 +29,11 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({
     loadDailyExpenses();
   }, []);
 
-  const loadDailyExpenses = async () => {
+  const loadDailyExpenses = () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('daily_expenses')
-        .select('*')
-        .order('expense_date', { ascending: false });
-
-      if (error) throw error;
-
-      const formattedData: DailyExpense[] = (data || []).map((item: any) => ({
-        id: item.id,
-        budgetLineId: item.budget_line_id,
-        amount: parseFloat(item.amount),
-        description: item.description,
-        expenseDate: item.expense_date,
-        createdAt: item.created_at
-      }));
-
-      setDailyExpenses(formattedData);
+      const expenses = LocalDatabase.loadData<DailyExpense[]>('daily_expenses', []);
+      setDailyExpenses(expenses);
     } catch (error) {
       console.error('Erreur lors du chargement:', error);
     } finally {
@@ -56,62 +41,39 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({
     }
   };
 
-  const handleAddExpense = async () => {
+  const handleAddExpense = () => {
     if (!newExpense.budgetLineId || !newExpense.amount) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('daily_expenses')
-        .insert([{
-          budget_line_id: newExpense.budgetLineId,
-          amount: parseFloat(newExpense.amount),
-          description: newExpense.description,
-          expense_date: newExpense.expenseDate
-        }])
-        .select()
-        .single();
+    const newDailyExpense: DailyExpense = {
+      id: crypto.randomUUID(),
+      budgetLineId: newExpense.budgetLineId,
+      amount: parseFloat(newExpense.amount),
+      description: newExpense.description,
+      expenseDate: newExpense.expenseDate,
+      createdAt: new Date().toISOString()
+    };
 
-      if (error) throw error;
+    const updatedExpenses = [newDailyExpense, ...dailyExpenses];
+    setDailyExpenses(updatedExpenses);
+    LocalDatabase.saveData('daily_expenses', updatedExpenses);
 
-      const formattedExpense: DailyExpense = {
-        id: data.id,
-        budgetLineId: data.budget_line_id,
-        amount: parseFloat(data.amount),
-        description: data.description,
-        expenseDate: data.expense_date,
-        createdAt: data.created_at
-      };
-
-      setDailyExpenses([formattedExpense, ...dailyExpenses]);
-      setNewExpense({
-        budgetLineId: budgetLines[0]?.id || '',
-        amount: '',
-        description: '',
-        expenseDate: new Date().toISOString().split('T')[0]
-      });
-      setIsAdding(false);
-      onDailyExpensesChange();
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout:', error);
-    }
+    setNewExpense({
+      budgetLineId: budgetLines[0]?.id || '',
+      amount: '',
+      description: '',
+      expenseDate: new Date().toISOString().split('T')[0]
+    });
+    setIsAdding(false);
+    onDailyExpensesChange();
   };
 
-  const handleDeleteExpense = async (id: string) => {
+  const handleDeleteExpense = (id: string) => {
     if (!confirm('Supprimer cette dépense ?')) return;
 
-    try {
-      const { error } = await supabase
-        .from('daily_expenses')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setDailyExpenses(dailyExpenses.filter(e => e.id !== id));
-      onDailyExpensesChange();
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-    }
+    const updatedExpenses = dailyExpenses.filter(e => e.id !== id);
+    setDailyExpenses(updatedExpenses);
+    LocalDatabase.saveData('daily_expenses', updatedExpenses);
+    onDailyExpensesChange();
   };
 
   const startEdit = (expense: DailyExpense) => {
@@ -124,34 +86,20 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({
     });
   };
 
-  const saveEdit = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('daily_expenses')
-        .update({
-          budget_line_id: editValues.budgetLineId,
-          amount: parseFloat(editValues.amount),
-          description: editValues.description,
-          expense_date: editValues.expenseDate
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setDailyExpenses(dailyExpenses.map(e =>
-        e.id === id ? {
-          ...e,
-          budgetLineId: editValues.budgetLineId,
-          amount: parseFloat(editValues.amount),
-          description: editValues.description,
-          expenseDate: editValues.expenseDate
-        } : e
-      ));
-      setEditingId(null);
-      onDailyExpensesChange();
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
-    }
+  const saveEdit = (id: string) => {
+    const updatedExpenses = dailyExpenses.map(e =>
+      e.id === id ? {
+        ...e,
+        budgetLineId: editValues.budgetLineId,
+        amount: parseFloat(editValues.amount),
+        description: editValues.description,
+        expenseDate: editValues.expenseDate
+      } : e
+    );
+    setDailyExpenses(updatedExpenses);
+    LocalDatabase.saveData('daily_expenses', updatedExpenses);
+    setEditingId(null);
+    onDailyExpensesChange();
   };
 
   const getBudgetLineName = (budgetLineId: string): string => {

@@ -18,7 +18,9 @@ const STORAGE_KEYS = {
   EXPENSES: 'budget_expenses',
   LOANS: 'budget_loans',
   FUTURE_EXPENSES: 'budget_future_expenses',
-  CATEGORIES: 'budget_categories'
+  CATEGORIES: 'budget_categories',
+  BUDGET_LINES: 'budget_lines',
+  DAILY_EXPENSES: 'daily_expenses'
 };
 
 function App() {
@@ -54,51 +56,12 @@ function App() {
     loadDailyExpenses();
   }, []);
 
-  const loadBudgetLines = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('budget_lines')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const formattedData: BudgetLine[] = (data || []).map((item: any) => ({
-        id: item.id,
-        description: item.description,
-        category: item.category,
-        plannedAmount: parseFloat(item.planned_amount),
-        createdAt: item.created_at
-      }));
-
-      setBudgetLines(formattedData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des lignes budgétaires:', error);
-    }
+  const loadBudgetLines = () => {
+    setBudgetLines(LocalDatabase.loadData(STORAGE_KEYS.BUDGET_LINES, []));
   };
 
-  const loadDailyExpenses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('daily_expenses')
-        .select('*')
-        .order('expense_date', { ascending: false });
-
-      if (error) throw error;
-
-      const formattedData: DailyExpense[] = (data || []).map((item: any) => ({
-        id: item.id,
-        budgetLineId: item.budget_line_id,
-        amount: parseFloat(item.amount),
-        description: item.description,
-        expenseDate: item.expense_date,
-        createdAt: item.created_at
-      }));
-
-      setDailyExpenses(formattedData);
-    } catch (error) {
-      console.error('Erreur lors du chargement des dépenses journalières:', error);
-    }
+  const loadDailyExpenses = () => {
+    setDailyExpenses(LocalDatabase.loadData(STORAGE_KEYS.DAILY_EXPENSES, []));
   };
 
   // Sauvegarder dans le localStorage
@@ -121,6 +84,14 @@ function App() {
   useEffect(() => {
     LocalDatabase.saveData(STORAGE_KEYS.CATEGORIES, categories);
   }, [categories]);
+
+  useEffect(() => {
+    LocalDatabase.saveData(STORAGE_KEYS.BUDGET_LINES, budgetLines);
+  }, [budgetLines]);
+
+  useEffect(() => {
+    LocalDatabase.saveData(STORAGE_KEYS.DAILY_EXPENSES, dailyExpenses);
+  }, [dailyExpenses]);
 
   // Gestion des revenus
   const addIncome = (incomeData: Omit<Income, 'id' | 'date'>) => {

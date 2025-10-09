@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Receipt, AlertCircle, Edit3, Save, X, Palette } from 'lucide-react';
 import { BudgetLine, CustomCategory, DailyExpense, Income } from '../types';
 import { formatCurrency } from '../utils/calculations';
-import { supabase } from '../utils/supabase';
+import { LocalDatabase } from '../utils/storage';
 
 interface BudgetLinesListProps {
   categories: CustomCategory[];
@@ -43,40 +43,14 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = () => {
     setLoading(true);
     try {
-      const { data: linesData, error: linesError } = await supabase
-        .from('budget_lines')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const lines = LocalDatabase.loadData<BudgetLine[]>('budget_lines', []);
+      setBudgetLines(lines);
 
-      if (linesError) throw linesError;
-
-      const formattedLines: BudgetLine[] = (linesData || []).map((item: any) => ({
-        id: item.id,
-        description: item.description,
-        category: item.category,
-        plannedAmount: parseFloat(item.planned_amount),
-        createdAt: item.created_at
-      }));
-      setBudgetLines(formattedLines);
-
-      const { data: expensesData, error: expensesError } = await supabase
-        .from('daily_expenses')
-        .select('*');
-
-      if (expensesError) throw expensesError;
-
-      const formattedExpenses: DailyExpense[] = (expensesData || []).map((item: any) => ({
-        id: item.id,
-        budgetLineId: item.budget_line_id,
-        amount: parseFloat(item.amount),
-        description: item.description,
-        expenseDate: item.expense_date,
-        createdAt: item.created_at
-      }));
-      setDailyExpenses(formattedExpenses);
+      const expenses = LocalDatabase.loadData<DailyExpense[]>('daily_expenses', []);
+      setDailyExpenses(expenses);
     } catch (error) {
       console.error('Erreur lors du chargement:', error);
     } finally {
@@ -95,7 +69,7 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
     return plannedAmount > 0 ? (spent / plannedAmount) * 100 : 0;
   };
 
-  const handleAddBudgetLine = async () => {
+  const handleAddBudgetLine = () => {
     if (!newBudgetLine.description || !newBudgetLine.plannedAmount) return;
 
     const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
@@ -107,41 +81,28 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('budget_lines')
-        .insert([{
-          description: newBudgetLine.description,
-          category: newBudgetLine.category,
-          planned_amount: parseFloat(newBudgetLine.plannedAmount)
-        }])
-        .select()
-        .single();
+    const newLine: BudgetLine = {
+      id: crypto.randomUUID(),
+      description: newBudgetLine.description,
+      category: newBudgetLine.category,
+      plannedAmount: parseFloat(newBudgetLine.plannedAmount),
+      createdAt: new Date().toISOString()
+    };
 
-      if (error) throw error;
+    const updatedLines = [newLine, ...budgetLines];
+    setBudgetLines(updatedLines);
+    LocalDatabase.saveData('budget_lines', updatedLines);
 
-      const formattedLine: BudgetLine = {
-        id: data.id,
-        description: data.description,
-        category: data.category,
-        plannedAmount: parseFloat(data.planned_amount),
-        createdAt: data.created_at
-      };
-
-      setBudgetLines([formattedLine, ...budgetLines]);
-      setNewBudgetLine({
-        description: '',
-        category: categories[0]?.name || '',
-        plannedAmount: ''
-      });
-      setIsAdding(false);
-      onBudgetLinesChange();
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout:', error);
-    }
+    setNewBudgetLine({
+      description: '',
+      category: categories[0]?.name || '',
+      plannedAmount: ''
+    });
+    setIsAdding(false);
+    onBudgetLinesChange();
   };
 
-  const handleUpdateBudgetLine = async (id: string, field: string, value: any) => {
+  const handleUpdateBudgetLine = (id: string, field: string, value: any) => {
     const line = budgetLines.find(l => l.id === id);
     if (!line) return;
 
@@ -158,29 +119,15 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
       }
     }
 
-    const updatedData: any = {};
-    if (field === 'description') updatedData.description = value;
-    if (field === 'category') updatedData.category = value;
-    if (field === 'plannedAmount') updatedData.planned_amount = value;
-
-    try {
-      const { error } = await supabase
-        .from('budget_lines')
-        .update(updatedData)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setBudgetLines(budgetLines.map(l =>
-        l.id === id ? { ...l, [field]: field === 'plannedAmount' ? parseFloat(value) : value } : l
-      ));
-      onBudgetLinesChange();
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour:', error);
-    }
+    const updatedLines = budgetLines.map(l =>
+      l.id === id ? { ...l, [field]: field === 'plannedAmount' ? parseFloat(value) : value } : l
+    );
+    setBudgetLines(updatedLines);
+    LocalDatabase.saveData('budget_lines', updatedLines);
+    onBudgetLinesChange();
   };
 
-  const handleDeleteBudgetLine = async (id: string) => {
+  const handleDeleteBudgetLine = (id: string) => {
     const hasExpenses = dailyExpenses.some(e => e.budgetLineId === id);
 
     if (hasExpenses) {
@@ -190,19 +137,10 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
 
     if (!confirm('Supprimer cette ligne budgétaire ?')) return;
 
-    try {
-      const { error } = await supabase
-        .from('budget_lines')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setBudgetLines(budgetLines.filter(l => l.id !== id));
-      onBudgetLinesChange();
-    } catch (error) {
-      console.error('Erreur lors de la suppression:', error);
-    }
+    const updatedLines = budgetLines.filter(l => l.id !== id);
+    setBudgetLines(updatedLines);
+    LocalDatabase.saveData('budget_lines', updatedLines);
+    onBudgetLinesChange();
   };
 
   const startEdit = (line: BudgetLine) => {
@@ -214,10 +152,10 @@ export const BudgetLinesList: React.FC<BudgetLinesListProps> = ({
     });
   };
 
-  const saveEdit = async (id: string) => {
-    await handleUpdateBudgetLine(id, 'description', editValues.description);
-    await handleUpdateBudgetLine(id, 'category', editValues.category);
-    await handleUpdateBudgetLine(id, 'plannedAmount', parseFloat(editValues.plannedAmount));
+  const saveEdit = (id: string) => {
+    handleUpdateBudgetLine(id, 'description', editValues.description);
+    handleUpdateBudgetLine(id, 'category', editValues.category);
+    handleUpdateBudgetLine(id, 'plannedAmount', parseFloat(editValues.plannedAmount));
     setEditingId(null);
   };
 
