@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Plus, BarChart3, Database, Calendar, Minus, TrendingDown, Receipt } from 'lucide-react';
-import { Income, Expense, Loan, FutureExpense, CustomCategory, BudgetLine } from './types';
+import { Income, Expense, Loan, FutureExpense, CustomCategory, BudgetLine, DailyExpense } from './types';
 import { Dashboard } from './components/Dashboard';
 import { IncomeForm } from './components/IncomeForm';
 import { ExpenseList } from './components/ExpenseList';
@@ -28,6 +28,7 @@ function App() {
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [categories, setCategories] = useState<CustomCategory[]>(getDefaultCategories());
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
+  const [dailyExpenses, setDailyExpenses] = useState<DailyExpense[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'income' | 'expenses' | 'budgetLines' | 'dailyExpenses' | 'planning' | 'chart' | 'database'>('overview');
 
   // Charger les données depuis le localStorage
@@ -50,6 +51,7 @@ function App() {
   useEffect(() => {
     loadData();
     loadBudgetLines();
+    loadDailyExpenses();
   }, []);
 
   const loadBudgetLines = async () => {
@@ -72,6 +74,30 @@ function App() {
       setBudgetLines(formattedData);
     } catch (error) {
       console.error('Erreur lors du chargement des lignes budgétaires:', error);
+    }
+  };
+
+  const loadDailyExpenses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('daily_expenses')
+        .select('*')
+        .order('expense_date', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedData: DailyExpense[] = (data || []).map((item: any) => ({
+        id: item.id,
+        budgetLineId: item.budget_line_id,
+        amount: parseFloat(item.amount),
+        description: item.description,
+        expenseDate: item.expense_date,
+        createdAt: item.created_at
+      }));
+
+      setDailyExpenses(formattedData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des dépenses journalières:', error);
     }
   };
 
@@ -224,6 +250,10 @@ function App() {
     loadBudgetLines();
   };
 
+  const handleDailyExpensesChange = () => {
+    loadDailyExpenses();
+  };
+
   const tabs = [
     { id: 'overview', label: 'Accueil', icon: Wallet },
     { id: 'income', label: 'Revenus', icon: Plus },
@@ -279,11 +309,13 @@ function App() {
         {/* Content */}
         <div className="space-y-6">
           {activeTab === 'overview' && (
-            <Dashboard 
-              incomes={incomes} 
-              expenses={expenses} 
+            <Dashboard
+              incomes={incomes}
+              expenses={expenses}
               loans={loans}
               futureExpenses={futureExpenses}
+              budgetLines={budgetLines}
+              dailyExpenses={dailyExpenses}
             />
           )}
 
@@ -321,7 +353,10 @@ function App() {
           )}
 
           {activeTab === 'dailyExpenses' && (
-            <DailyExpenses budgetLines={budgetLines} />
+            <DailyExpenses
+              budgetLines={budgetLines}
+              onDailyExpensesChange={handleDailyExpensesChange}
+            />
           )}
 
           {activeTab === 'planning' && (

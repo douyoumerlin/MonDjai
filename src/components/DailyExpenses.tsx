@@ -6,9 +6,10 @@ import { supabase } from '../utils/supabase';
 
 interface DailyExpensesProps {
   budgetLines: BudgetLine[];
+  onDailyExpensesChange?: () => void;
 }
 
-export const DailyExpenses: React.FC<DailyExpensesProps> = ({ budgetLines }) => {
+export const DailyExpenses: React.FC<DailyExpensesProps> = ({ budgetLines, onDailyExpensesChange }) => {
   const [dailyExpenses, setDailyExpenses] = useState<DailyExpense[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -100,6 +101,10 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({ budgetLines }) => 
       });
       setIsAdding(false);
 
+      if (onDailyExpensesChange) {
+        onDailyExpensesChange();
+      }
+
       if (percentage + (parseFloat(newExpense.amount) / budgetLine.plannedAmount) * 100 >= 80) {
         alert(`⚠️ Attention: Le budget "${budgetLine.description}" est à ${percentage.toFixed(1)}%`);
       }
@@ -121,6 +126,10 @@ export const DailyExpenses: React.FC<DailyExpensesProps> = ({ budgetLines }) => 
       if (error) throw error;
 
       setDailyExpenses(dailyExpenses.filter(e => e.id !== id));
+
+      if (onDailyExpensesChange) {
+        onDailyExpensesChange();
+      }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
       alert('Erreur lors de la suppression');
