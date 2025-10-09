@@ -314,6 +314,9 @@ function App() {
             <BudgetLinesList
               categories={categories}
               onBudgetLinesChange={handleBudgetLinesChange}
+              onAddCategory={addCategory}
+              onUpdateCategory={updateCategory}
+              onDeleteCategory={deleteCategory}
             />
           )}
 
