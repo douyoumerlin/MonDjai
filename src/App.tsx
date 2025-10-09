@@ -181,7 +181,7 @@ function App() {
   };
 
   const updateFutureExpense = (id: string, updates: Partial<FutureExpense>) => {
-    setFutureExpenses(futureExpenses.map(expense => 
+    setFutureExpenses(futureExpenses.map(expense =>
       expense.id === id ? { ...expense, ...updates } : expense
     ));
   };
@@ -189,6 +189,40 @@ function App() {
   const deleteFutureExpense = (id: string) => {
     if (confirm('Supprimer cette dépense future ?')) {
       setFutureExpenses(futureExpenses.filter(expense => expense.id !== id));
+    }
+  };
+
+  const handlePayPlannedItem = (id: string, type: 'loan' | 'expense', budgetLineId: string, amount: number) => {
+    if (type === 'loan') {
+      const loan = loans.find(l => l.id === id);
+      if (loan) {
+        updateLoan(id, { isPaid: true });
+
+        const newDailyExpense: DailyExpense = {
+          id: crypto.randomUUID(),
+          budgetLineId: budgetLineId,
+          amount: amount,
+          description: `Remboursement: ${loan.description}`,
+          expenseDate: new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString()
+        };
+        setDailyExpenses([...dailyExpenses, newDailyExpense]);
+      }
+    } else {
+      const expense = futureExpenses.find(e => e.id === id);
+      if (expense) {
+        updateFutureExpense(id, { isPaid: true });
+
+        const newDailyExpense: DailyExpense = {
+          id: crypto.randomUUID(),
+          budgetLineId: budgetLineId,
+          amount: amount,
+          description: `Dépense planifiée: ${expense.description}`,
+          expenseDate: new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString()
+        };
+        setDailyExpenses([...dailyExpenses, newDailyExpense]);
+      }
     }
   };
 
@@ -321,6 +355,7 @@ function App() {
               loans={loans}
               futureExpenses={futureExpenses}
               categories={categories}
+              budgetLines={budgetLines}
               onAddLoan={addLoan}
               onUpdateLoan={updateLoan}
               onDeleteLoan={deleteLoan}
@@ -328,6 +363,7 @@ function App() {
               onAddFutureExpense={addFutureExpense}
               onUpdateFutureExpense={updateFutureExpense}
               onDeleteFutureExpense={deleteFutureExpense}
+              onPayPlannedItem={handlePayPlannedItem}
             />
           )}
 

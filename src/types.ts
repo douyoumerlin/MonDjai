@@ -22,6 +22,7 @@ export interface Loan {
   amount: number;
   date: string;
   isPaid: boolean;
+  budgetLineId?: string;
 }
 
 export interface FutureExpense {
@@ -29,7 +30,9 @@ export interface FutureExpense {
   description: string;
   amount: number;
   category: string;
-  dueDate: string;
+  targetDate: string;
+  budgetLineId?: string;
+  isPaid?: boolean;
 }
 
 export interface CustomCategory {
